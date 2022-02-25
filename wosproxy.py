@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """
 
-Copyright (c) 2016 Ad Schellevis <ad@opnsense.org>
+Copyright (c) Diego Garcia
 All rights reserved.
 
 """
