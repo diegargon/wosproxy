@@ -14,16 +14,17 @@ socket_filename = '/var/run/wosproxy.socket'
 
 print_lock = threading.Lock()
 
-def threaded(c):
+def threaded(conn, logger):
+    logger.debug('Thread starting with pid %d' % os.getpid())
     while True:
-        data = c.recv(1024)
+        data = conn.recv(1024)
         if not data:
-            print('no data')
-
-            print_lock.release()
-            break
-        # reverse data = data[::~1]
-    c.close()        
+            logger.debug('Received data: no data')
+            break        
+        logger.debug('Received data: %s' % data)        
+        #break
+    logger.debug('Thread end pid %d' % os.getpid())        
+    conn.close()        
 
 
 def leave(s):
@@ -39,20 +40,17 @@ def wos_main(appname, logger):
             os.unlink(socket_filename)
         except OSError:
             if os.path.exists(socket_filename):
-                print('socket exists')
+                logger.err(msg ='socket exists')                
                 raise                
 
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         s.bind(socket_filename)
         os.chmod(socket_filename, 0o666)
-        s.listen(20)
-        print(appname, ' is listining on socket ', socket_filename)
-
+        s.listen(20)        
+        logger.info(appname + ' is listining on socket ' + socket_filename + ' pid %d' % os.getpid())
         while True:
-            c, addr = s.accept()
-            print_lock.acquire()
-            #print('Connected to:', addr[0], ':', addr[1])
-            start_new_thread(threaded,(c,))
+            conn, addr = s.accept()      
+            start_new_thread(threaded,(conn,logger,))
 
     except KeyboardInterrupt:
         #exit key

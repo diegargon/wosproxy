@@ -27,7 +27,6 @@ class Daemon:
 		os.chdir('/') 
 		os.setsid() 
 		os.umask(0) 
-	
 
 		# do second fork
 		try: 
@@ -66,7 +65,6 @@ class Daemon:
 		os.remove(self.pidfile)
 
 	def start(self):
-		"""Start the daemon."""
 
 		# Check for a pidfile to see if the daemon already runs
 		try:
@@ -87,7 +85,6 @@ class Daemon:
 		self.run()
 
 	def stop(self):
-		"""Stop the daemon."""
 
 		# Get the pid from the pidfile
 		try:
@@ -117,12 +114,10 @@ class Daemon:
 				sys.exit(1)
 
 	def restart(self):
-		"""Restart the daemon."""
 		self.stop()
 		self.start()
 
 	def run(self):
-		"""You should override this method when you subclass Daemon.
-		
+		"""You should override this method when you subclass Daemon.		
 		It will be called after the process has been daemonized by 
 		start() or restart()."""

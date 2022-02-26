@@ -46,3 +46,4 @@ class Logger:
         self.logger.error(msg)
         if self.console:
             print(msg)
+            
