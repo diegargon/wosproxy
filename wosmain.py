@@ -10,9 +10,8 @@ import socket
 from _thread import *
 import threading
 
-appname = 'wosproxy'
 socket_filename = '/var/run/wosproxy.socket'
-pid_filename = '/tmp/' + appname + '.pid'
+
 print_lock = threading.Lock()
 
 def threaded(c):
@@ -32,7 +31,9 @@ def leave(s):
     if(os.path.exists(socket_filename)):
         os.remove(socket_filename)    
 
-def wos_main():
+def wos_main(appname, logger):
+    pid_filename = '/tmp/' + appname + '.pid'
+
     try:
         try:
             os.unlink(socket_filename)
@@ -60,4 +61,3 @@ def wos_main():
     except SystemExit:
         #System exit
         leave(s)    
-

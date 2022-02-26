@@ -7,18 +7,26 @@ All rights reserved.
 
 """
 
-import sys, time
+import sys
 from daemon import Daemon
 from wosmain import wos_main
+from woslogger import Logger
+
+appname = 'wosproxy'
+
+logger = Logger(appname='woslogger')
+
 
 #Overwrite daemon run method
 class WosDaemon(Daemon):
         def run(self):
-                wos_main()
-
+                logger.info(msg= '%s is starting in daemon mode' % appname)
+                wos_main(appname, logger)
 
 if len(sys.argv) == 2 and sys.argv[1] == '-nd':
-    wos_main()
+    logger.toConsole(set= True)
+    logger.info(msg= '%s is starting in console mode' % appname)    
+    wos_main(appname, logger)
 elif len(sys.argv) == 3 and sys.argv[1] == '-d':      
     daemon = WosDaemon('/tmp/wosd.pid')
     if 'start' == sys.argv[2]:
