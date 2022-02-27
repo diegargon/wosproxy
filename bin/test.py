@@ -1,3 +1,4 @@
 #!/usr/bin/python3
-# { "request": "test.py", "expect_output": 0 }
+# Request:      { "request": "test.py" }
+# Response:     { "result": true, "data": {"name":"diego","surname":"garcia"} }
 print ('{"name":"diego","surname":"garcia"}')

@@ -13,6 +13,7 @@ from _thread import *
 import threading
 from wosproto import WosProto
 import subprocess
+import json
 
 socket_filename = '/var/run/wosproxy.socket'
 eot_flag = "\\r\\n\\r\\n"
@@ -23,16 +24,14 @@ def run_command(cmd, parms):
     if parms == False:
         parms = ''
     result = subprocess.run([cmd, parms], stdout=subprocess.PIPE).stdout.decode('utf-8')
-    #return '{"result":"true","data":"hello"}'
-    #TODO check is valid json result
-    #add result to data { result: true, data: result
+
     return result
 
 def threaded(conn, logger):    
     logger.debug('Thread starting with pid %d' % os.getpid())
     wos = WosProto(conn,logger)
     recv = wos.receive()
-    if 'result' in recv:
+    if 'result' in recv: #error message
         reply = recv
     else:    
         cmd = recv['request']
@@ -41,19 +40,20 @@ def threaded(conn, logger):
             parms = recv['parms']
             
         reply = run_command(cmd, parms)
-
-    wos.reply(reply)
-    #while True:    
-        #data = str(conn.recv(1024), encoding='UTF-8')
-        #data = conn.recv(1024)
-        #if not data:
-        #    logger.debug('Receivedº data: no data')
-        #    break        
-        #logger.debug('Received data: \'%s\'' % data.strip())
-        #if(data == eot_flag):
-        #   print("Must break")
-        #    break
         
+        if 'noreply' not in recv:
+            try:
+                dict_reply = json.loads(reply)
+                reply = {'result': True, 'data': dict_reply}
+            except ValueError as e:
+                logger.warning('Request reply invalid json')
+                reply = {'result': False, 'error': 'Request reply invalid json'}
+    
+    if 'noreply' not in recv:
+        wos.reply(reply)
+    else:
+        logger.debug('Request not want reply')
+
     logger.debug('Thread end pid %d' % os.getpid())        
     conn.close()        
 

@@ -14,8 +14,7 @@ from woslogger import Logger
 
 appname = 'wosproxy'
 
-logger = Logger(appname=appname)
-
+logger = Logger(appname)
 
 #Overwrite daemon run method
 class WosDaemon(Daemon):

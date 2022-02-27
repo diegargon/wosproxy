@@ -44,12 +44,11 @@ class WosProto:
 
     def recv(self):
         buff = ''
-        while True:
-            #data = self.conn.recv(1024)
+        while True:            
             data = str(self.conn.recv(4096), 'utf-8')
             data = data.strip()
             if not data:
-                self.logger.debug('Received data: no data')
+                self.logger.debug('No data received')
                 break
             elif (data == self.eot_flag):
                 break
