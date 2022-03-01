@@ -3,13 +3,6 @@
 Copyright (c) Diego Garcia
 All rights reserved.
 
-    #jsondata= recibe()
-    #true/false =valida(jsondata)
-    #true/false = validate_request(request)
-    #jsondatos = ejecuta(comando)
-    #true/false = valid (jsondata)
-    #retorna(datos)        
-
 """
 
 import json
@@ -25,18 +18,20 @@ class WosProto:
         self.eot_flag = "\\r\\n\\r\\n"
         self.eot_flag = "\\r"
 
-    def receive(self):
-        jsondata = self.recv()
+    def receive(self):        
+        jsondata = self.recv() #Sock Recv
+
+        #Check valid json / request(if file exist)
         if not jsondata:
             reply = {'result': False, 'error': 'No data'}
             return reply
         
-        dict_data =  self.is_valid_json(jsondata)
+        dict_data =  self.validate_json(jsondata)
         if dict_data == False:
             reply = {'result': False, 'error': 'Invalid json receive'}
             return reply
         
-        if 'request' not in dict_data or self.is_valid_request(dict_data) == False:
+        if 'request' not in dict_data or self.validate_request(dict_data) == False:
             reply = {'result': False, 'error': 'Invalid request receive'}
             return reply
         
@@ -58,7 +53,8 @@ class WosProto:
                                                  
         return buff
 
-    def is_valid_json(self, jsondata):
+    # Check valid syntax & request field exists
+    def validate_json(self, jsondata):
         try:
             data = json.loads(jsondata)
         except ValueError as e:
@@ -66,13 +62,18 @@ class WosProto:
 
         if 'request' in data:
             return data
+
         return False
 
-    def is_valid_request(self, request_data): 
-        if os.path.isfile(self.bindir + '/' + request_data['request']):
-            request_data['request'] = self.bindir + '/' + request_data['request']
-            return True
-        
+    # request contains the file to execute we add the bindir path and check
+    # if file exists
+    def validate_request(self, request_data): 
+        request_data['request'] = self.bindir + '/' + request_data['request']
+        if os.path.isfile(request_data['request']):
+            if os.access(request_data['request'], os.X_OK):
+                return True
+            else:
+                self.logger.error('File is not executable: %s' % request_data['request'])        
         return False
         
     def reply(self, reply):

@@ -5,9 +5,9 @@ All rights reserved.
 
 """
 
-from curses.ascii import EOT
+#from curses.ascii import EOT
+#from pickle import FALSE
 import os
-from pickle import FALSE
 import socket
 from _thread import *
 import threading

@@ -25,7 +25,7 @@ class Logger:
             self.logger.setLevel(logging.WARNING)
         elif loglevel == 'LOG_ERR':
             self.logger.setLevel(logging.ERROR)
-        else:            
+        else:      
             self.logger.setLevel(logging.DEBUG)
 
     def toConsole(self, set = True):
