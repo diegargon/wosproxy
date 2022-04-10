@@ -31,6 +31,8 @@ def threaded(conn, logger):
     logger.debug('Thread starting with pid %d' % os.getpid())
     wos = WosProto(conn,logger)
     recv = wos.receive()
+    data_reply = []
+
     if 'result' in recv: #error message
         reply = recv
     else:    
@@ -42,15 +44,16 @@ def threaded(conn, logger):
         reply = run_command(cmd, parms)
         
         if 'noreply' not in recv:
-            try:
-                dict_reply = json.loads(reply)
-                reply = {'result': True, 'data': dict_reply}
+            try:                
+                data_reply.extend(json.loads(reply)) #Json to list for extend the list (para cuando hagamos bucle de cmds)
+                json_reply = json.dumps(data_reply)  #extended list to json for build the final reply
+                json_reply = '{"result": "ok", "data":'+ json_reply +'}' #build json                   
             except ValueError as e:
                 logger.warning('Request reply invalid json')
-                reply = {'result': False, 'error': 'Request reply invalid json'}
+                json_reply = {'result': False, 'error': 'Request reply invalid json', 'end': 'end'}
     
     if 'noreply' not in recv:
-        wos.reply(reply)
+        wos.reply(json_reply)
     else:
         logger.debug('Request not want reply')
 

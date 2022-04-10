@@ -15,8 +15,9 @@ class WosProto:
         self.logger = logger
         #self.bindir = '/usr/share/wosproxy/bin'
         self.bindir = '/home/diego/wosproxy/bin'
-        self.eot_flag = "\\r\\n\\r\\n"
-        self.eot_flag = "\\r"
+        #self.eot_flag = "\\r\\n\\r\\n"
+        self.eot_flag = "\r\n\r\n"
+        #self.eot_flag = "\\r"
 
     def receive(self):        
         jsondata = self.recv() #Sock Recv
@@ -26,7 +27,9 @@ class WosProto:
             reply = {'result': False, 'error': 'No data'}
             return reply
         
+        self.logger.debug('json data receive: \'%s\'' % jsondata) 
         dict_data =  self.validate_json(jsondata)
+        
         if dict_data == False:
             reply = {'result': False, 'error': 'Invalid json receive'}
             return reply
@@ -41,15 +44,17 @@ class WosProto:
         buff = ''
         while True:            
             data = str(self.conn.recv(4096), 'utf-8')
-            data = data.strip()
+            #data = data.strip()
             if not data:
-                self.logger.debug('No data received')
-                break
-            elif (data == self.eot_flag):
+                self.logger.debug('No data received: \'%s\'' % data) #data.strip())
+                break                
+            elif (self.eot_flag in data):
+                self.logger.debug('Line Break received')
+                buff += data.strip()
                 break
             else:
-                self.logger.debug('Received data: \'%s\'' % data.strip())
-                buff += data  
+                self.logger.debug('Received data: \'%s\'' % data ) #data.strip())
+                buff += data.strip()
                                                  
         return buff
 
@@ -76,7 +81,8 @@ class WosProto:
                 self.logger.error('File is not executable: %s' % request_data['request'])        
         return False
         
-    def reply(self, reply):
-        json_data = json.dumps(reply)
-        self.conn.send(json_data.encode())
+    def reply(self, reply):        
+        #json_data = json.dumps(reply)
+        self.logger.debug('Reply data: \'%s\'' % reply)
+        self.conn.send(reply.encode())
     
