@@ -77,7 +77,7 @@ class WosProto:
             script_request = self.bindir + '/' + request_value['cmd']
             request_data['request'][i]['cmd'] = script_request
             if not os.path.isfile(script_request):                
-                self.logger.error('File is not executable: %s' % script_request)        
+                self.logger.err('File is not executable: %s' % script_request)        
                 return False
         return True
          
