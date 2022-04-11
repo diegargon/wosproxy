@@ -28,17 +28,17 @@ class WosProto:
             return reply
         
         self.logger.debug('json data receive: \'%s\'' % jsondata) 
-        dict_data =  self.validate_json(jsondata)
+        data_dct =  self.validate_json(jsondata)
         
-        if dict_data == False:
+        if data_dct == False:
             reply = {'result': False, 'error': 'Invalid json receive'}
             return reply
         
-        if 'request' not in dict_data or self.validate_request(dict_data) == False:
+        if 'request' not in data_dct or self.validate_request(data_dct) == False:
             reply = {'result': False, 'error': 'Invalid request receive'}
             return reply
         
-        return  dict_data
+        return  data_dct
 
     def recv(self):
         buff = ''
@@ -58,7 +58,7 @@ class WosProto:
                                                  
         return buff
 
-    # Check valid syntax & request field exists
+    # Check valid syntax & request field exists, return dict
     def validate_json(self, jsondata):
         try:
             data = json.loads(jsondata)
@@ -70,19 +70,19 @@ class WosProto:
 
         return False
 
-    # request contains the file to execute we add the bindir path and check
-    # if file exists
+    # request contains the file to execute 
+    # we add the bindir path and check if file exists
     def validate_request(self, request_data): 
-        request_data['request'] = self.bindir + '/' + request_data['request']
-        if os.path.isfile(request_data['request']):
-            if os.access(request_data['request'], os.X_OK):
-                return True
-            else:
-                self.logger.error('File is not executable: %s' % request_data['request'])        
-        return False
-        
+        for i,request_value in enumerate(request_data['request']):
+            script_request = self.bindir + '/' + request_value['cmd']
+            request_data['request'][i]['cmd'] = script_request
+            if not os.path.isfile(script_request):                
+                self.logger.error('File is not executable: %s' % script_request)        
+                return False
+        return True
+         
     def reply(self, reply):        
-        #json_data = json.dumps(reply)
+        json_data = json.dumps(reply)
         self.logger.debug('Reply data: \'%s\'' % reply)
-        self.conn.send(reply.encode())
+        self.conn.send(json_data.encode())
     

@@ -32,28 +32,34 @@ def threaded(conn, logger):
     wos = WosProto(conn,logger)
     recv = wos.receive()
     data_reply = []
+    json_reply = ''
+    reply = {}
 
-    if 'result' in recv: #error message
-        reply = recv
-    else:    
-        cmd = recv['request']
-        parms = False
-        if 'parms' in recv:
-            parms = recv['parms']
+    if 'result' in recv: 
+        reply = recv #receive error message
+    else: 
+        for request_cmd in recv['request']:
+            cmd = request_cmd['cmd']
+            if 'parms' in request_cmd:
+                parms = request_cmd['parms']
+            else:
+                parms = False
             
-        reply = run_command(cmd, parms)
-        
-        if 'noreply' not in recv:
-            try:                
-                data_reply.extend(json.loads(reply)) #Json to list for extend the list (para cuando hagamos bucle de cmds)
-                json_reply = json.dumps(data_reply)  #extended list to json for build the final reply
-                json_reply = '{"result": "ok", "data":'+ json_reply +'}' #build json                   
-            except ValueError as e:
-                logger.warning('Request reply invalid json')
-                json_reply = {'result': False, 'error': 'Request reply invalid json', 'end': 'end'}
-    
+            json_reply = run_command(cmd, parms)
+            if 'noreply' not in recv:
+                try:        
+                    data_reply.extend(json.loads(json_reply)) #Json to list for extend the list (many cmds)
+                except ValueError as e:
+                    logger.warning('Request reply invalid json')
+                    reply = {'result': False, 'error': 'Request reply invalid json', 'end': 'end'}
+                    break
+        if not reply: #no error
+            json_reply = json.dumps(data_reply)  #extended list to json for build the final reply
+            json_reply = '{"result": "ok", "data":'+ json_reply +'}' #build json 
+            reply = json.loads(json_reply)            
+   
     if 'noreply' not in recv:
-        wos.reply(json_reply)
+        wos.reply(reply)
     else:
         logger.debug('Request not want reply')
 
