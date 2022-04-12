@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # depends:  psutil (pip install psutils)
 # Request:      { "request": "get_system.py" }
-# Response:     { "data": [{"id":"html_id","value":"field_value"}] }
+# Response:     [{"id":"html_id","value":"field_value"}]
 import json
 from configparser import ConfigParser
 import os.path
@@ -10,7 +10,6 @@ import datetime
 import subprocess
 import platform
 import psutil
-
 
 config = ConfigParser()
 
@@ -48,6 +47,7 @@ lista.append({"id": "hostname", "type": "text", "value": socket.gethostname()})
 lista.append({"id": "ncpu", "type": "text", "value": psutil.cpu_count(logical=False)})
 lista.append({"id": "nthreads", "type": "text", "value": psutil.cpu_count()})
 
+
 disk_lista = {"id":"disks", "type": "array", "value":[]}
 
 for disk in psutil.disk_partitions():
@@ -62,6 +62,7 @@ for disk in psutil.disk_partitions():
         disk_lista['value'].append(a)
 
 lista.append(disk_lista)
+
 #############
 json_data = json.dumps(lista)
 print (json_data)

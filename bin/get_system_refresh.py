@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+# Response:     [{"id":"html_id","value":"field_value"}]
 
 import psutil
 import json
@@ -15,8 +16,9 @@ load_avg = psutil.getloadavg()[0]
 lista.append({"id": "load_avg", "type": "text", "value": load_avg})
 lista.append({"id": "load_avg_value", "type": "value", "value": load_avg})
 
-cpu_freq = psutil.cpu_freq() 
-lista.append({"id": "cpu_freq", "type": "text", "value": cpu_freq})
+# return array [1,2,3] not work,  to tag:1,tag:2,tag:2
+#cpu_freq = psutil.cpu_freq() 
+#lista.append({"id": "cpu_freq", "type": "text", "value": cpu_freq})
 
 
 #lista.append({"id": "partitions", "type": "text", "value": list(psutil.disk_partitions())})
