@@ -38,10 +38,31 @@ lista.append({"id": "processor", "type": "text", "value": platform.processor()})
 
 date_now = datetime.datetime.now()
 str_time = str(date_now) #TODO Format
-
-lista.append({"id": "hostname", "type": "text", "value": socket.gethostname()})
 lista.append({"id": "system_time", "type": "text", "value": str_time})
 
+#socket
+lista.append({"id": "hostname", "type": "text", "value": socket.gethostname()})
+
+###############
+#psutil
+lista.append({"id": "ncpu", "type": "text", "value": psutil.cpu_count(logical=False)})
+lista.append({"id": "nthreads", "type": "text", "value": psutil.cpu_count()})
+
+disk_lista = {"id":"disks", "type": "array", "value":[]}
+
+for disk in psutil.disk_partitions():
+    if disk.fstype:
+        disk_details = psutil.disk_usage(disk.mountpoint)
+        #print(disk.device, disk.mountpoint, disk.fstype, disk_details.percent)        
+        #print(disk.device, psutil.disk_usage(disk.mountpoint))
+        a = {'disk_device': disk.device, 'disk_mountpoint': disk.mountpoint, 
+        'disk_fstype': disk.fstype, 'disk_total': disk_details.total, 'disk_free': disk_details.free, 
+        'disk_used': disk_details.used, 'disk_used_percent': disk_details.percent
+        }
+        disk_lista['value'].append(a)
+
+lista.append(disk_lista)
+#############
 json_data = json.dumps(lista)
 print (json_data)
 

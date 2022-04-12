@@ -51,7 +51,7 @@ def threaded(conn, logger):
                     data_reply.extend(json.loads(json_reply)) #Json to list for extend the list (many cmds)
                 except ValueError as e:
                     logger.warning('Request reply invalid json')
-                    reply = {'result': False, 'error': 'Request reply invalid json', 'end': 'end'}
+                    reply = {'result': False, 'error': 'Request reply invalid json', 'data': json_reply, 'end': 'end'}
                     break
         if not reply: #no error
             json_reply = json.dumps(data_reply)  #extended list to json for build the final reply

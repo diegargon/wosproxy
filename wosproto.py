@@ -31,7 +31,7 @@ class WosProto:
         data_dct =  self.validate_json(jsondata)
         
         if data_dct == False:
-            reply = {'result': False, 'error': 'Invalid json receive'}
+            reply = {'result': False, 'error': 'Invalid json receive', 'data': jsondata}
             return reply
         
         if 'request' not in data_dct or self.validate_request(data_dct) == False:
