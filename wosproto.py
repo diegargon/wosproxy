@@ -82,7 +82,7 @@ class WosProto:
         return True
          
     def reply(self, reply):        
-        json_data = json.dumps(reply)
+        json_data = json.dumps(reply) + "\r\n\r\n"
         self.logger.debug('Reply data: \'%s\'' % reply)
-        self.conn.send(json_data.encode())
+        self.conn.send(json_data.encode() )
     
