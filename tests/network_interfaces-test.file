@@ -1,0 +1,156 @@
+######################################################################
+# /etc/network/interfaces -- configuration file for ifup(8), ifdown(8)
+#
+# A "#" character in the very first column makes the rest of the line
+# be ignored. Blank lines are ignored. Lines may be indented freely.
+# A "\" character at the very end of the line indicates the next line
+# should be treated as a continuation of the current one.
+#
+# The "pre-up", "up", "down" and "post-down" options are valid for all 
+# interfaces, and may be specified multiple times. All other options
+# may only be specified once.
+#
+# See the interfaces(5) manpage for information on what options are 
+# available.
+######################################################################
+
+# We always want the loopback interface.
+#
+auto lo
+iface lo inet loopback
+
+# An example ethernet card setup: (broadcast and gateway are optional)
+#
+auto eth0
+iface eth0 inet static
+    address 192.168.0.42
+    network 192.168.0.0
+    netmask 255.255.255.0
+    broadcast 192.168.0.255
+    gateway 192.168.0.1
+
+# A more complicated ethernet setup, with a less common netmask, and a downright
+# weird broadcast address: (the "up" lines are executed verbatim when the 
+# interface is brought up, the "down" lines when it's brought down)
+#
+ auto eth1
+ iface eth1 inet static
+     address 192.168.1.42
+     network 192.168.1.0
+     netmask 255.255.255.128
+     broadcast 192.168.1.0
+     up route add -net 192.168.1.128 netmask 255.255.255.128 gw 192.168.1.2
+     up route add default gw 192.168.1.200
+    down route del default gw 192.168.1.200
+     down route del -net 192.168.1.128 netmask 255.255.255.128 gw 192.168.1.2
+
+# A more complicated ethernet setup with a single ethernet card with
+# two interfaces.
+# Note: This happens to work since ifconfig handles it that way, not because
+# ifup/down handles the ':' any differently.
+# Warning: There is a known bug if you do this, since the state will not
+# be properly defined if you try to 'ifdown eth0' when both interfaces
+# are up. The ifconfig program will not remove eth0 but it will be
+# removed from the interfaces state so you will see it up until you execute:
+# 'ifdown eth0:1 ; ifup eth0; ifdown eth0'
+# BTW, this is "bug" #193679 (it's not really a bug, it's more of a 
+# limitation)
+#
+ auto eth3 eth3:1
+ iface eth3 inet static
+     address 192.168.0.100
+     network 192.168.0.0
+     netmask 255.255.255.0
+     broadcast 192.168.0.255
+     gateway 192.168.0.1
+ iface eth3:1 inet static
+     address 192.168.0.200
+     network 192.168.0.0
+     netmask 255.255.255.0
+
+# "pre-up" and "post-down" commands are also available. In addition, the
+# exit status of these commands are checked, and if any fail, configuration
+# (or deconfiguration) is aborted. So:
+#
+ auto eth4
+ iface eth4 inet dhcp
+     pre-up [ -f /etc/network/local-network-ok ]
+#
+# will allow you to only have eth0 brought up when the file 
+# /etc/network/local-network-ok exists.
+
+# Two ethernet interfaces, one connected to a trusted LAN, the other to
+# the untrusted Internet. If their MAC addresses get swapped (because an
+# updated kernel uses a different order when probing for network cards,
+# say), then they don't get brought up at all.
+#
+ auto eth5 eth6
+ iface eth5 inet static
+     address 192.168.42.1
+     netmask 255.255.255.0
+     pre-up /path/to/check-mac-address.sh eth5 11:22:33:44:55:66
+     pre-up /usr/local/sbin/enable-masq
+     pre-up /usr/local/sbin/enable-masq2
+ iface eth6 inet dhcp
+     pre-up /path/to/check-mac-address.sh eth6 AA:BB:CC:DD:EE:FF
+     pre-up /usr/local/sbin/firewall
+
+# Two ethernet interfaces, one connected to a trusted LAN, the other to
+# the untrusted Internet, identified by MAC address rather than interface
+# name:
+#
+ auto eth7 eth8
+ mapping eth7 eth8
+     script /path/to/get-mac-address.sh
+     map 11:22:33:44:55:66 lan
+     map AA:BB:CC:DD:EE:FF internet
+ iface lan inet static
+     address 192.168.42.1
+     netmask 255.255.255.0
+     pre-up /usr/local/sbin/enable-masq $IFACE
+ iface internet inet dhcp
+     pre-up /usr/local/sbin/firewall $IFACE
+
+auto br0
+iface br0 inet static
+        address 10.10.0.15/24
+        gateway 10.10.0.1
+        bridge_ports eth0 eth1
+        up /usr/sbin/brctl stp br0 on
+
+auto eth0.222
+iface eth0.222 inet static
+        address 10.10.10.1/24
+        vlan-raw-device eth0
+
+
+auto etx0 bri0
+iface etx0 inet static
+        address 192.168.1.1/24
+iface etx0.110 inet manual
+        vlan-raw-device etx0
+iface bri0 inet static
+        address 192.168.110.1/24
+        bridge_ports etx0.110
+        bridge_stp on
+        bridge_maxwait 10        
+
+auto bond2
+iface bond2 inet manual
+        up ifconfig bond2 0.0.0.0 up
+        slaves ethx0 ethx1
+auto vlan10
+iface vlan10 inet static
+        address 10.10.10.12/24
+        vlan-raw-device bond2
+        gateway 10.10.0.1
+        dns-search hup.hu
+        dns-nameservers 10.10.0.2
+auto vlan20
+iface vlan20 inet static
+        address 10.20.10.12/24
+        vlan-raw-device bond2
+auto vlan30
+iface vlan30 inet static
+        address 10.30.10.12/24
+        vlan-raw-device bond2

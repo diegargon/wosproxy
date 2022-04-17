@@ -34,6 +34,10 @@ def read_file(f):
     sockets = f.split('\n')
     return [line.strip() for line in sockets]
 
+def gethost(addr): 
+    #TODO Timeout
+    return socket.gethostbyaddr(saddr)[0]
+
 def get_nfsocket_formated(lsocket):
     global RESOLV_COUNT
 
@@ -42,12 +46,12 @@ def get_nfsocket_formated(lsocket):
     lsplit = re.split(r'\s+', lsocket)
     tcp_dst_idx = 10
     udp_dst_idx = 9             
-
+    
     if "[UNREPLIED]" in lsplit[tcp_dst_idx]:
         tcp_dst_idx += 1
     if "[UNREPLIED]" in lsplit[udp_dst_idx]:       
         udp_dst_idx += 1
-
+    
     #print(lsocket)
     if lsplit[2] == "tcp":
         saddr = lsplit[6].replace('src=','').strip()
@@ -63,7 +67,7 @@ def get_nfsocket_formated(lsocket):
             elif  RESOLV_COUNT < MAX_RESOLV:
                 try:
                     RESOLV_COUNT += 1
-                    shost = socket.gethostbyaddr(saddr)[0]
+                    shost = gethost(saddr)
                     resolv[saddr] = shost
                 except:
                     resolv[saddr] = saddr
@@ -73,7 +77,7 @@ def get_nfsocket_formated(lsocket):
             elif RESOLV_COUNT < MAX_RESOLV:
                 try:
                     RESOLV_COUNT += 1
-                    dhost = socket.gethostbyaddr(daddr)[0]
+                    dhost = gethost(daddr)
                     resolv[daddr] = dhost
                 except:                
                     resolv[daddr] = daddr
@@ -108,7 +112,7 @@ def get_nfsocket_formated(lsocket):
             elif RESOLV_COUNT < MAX_RESOLV:
                 try:
                     RESOLV_COUNT += 1
-                    shost = socket.gethostbyaddr(saddr)[0]
+                    shost = gethost(saddr)
                     resolv[saddr] = shost
                 except:
                     resolv[saddr] = saddr
@@ -118,7 +122,7 @@ def get_nfsocket_formated(lsocket):
             elif RESOLV_COUNT < MAX_RESOLV:
                 try:
                     RESOLV_COUNT += 1
-                    dhost = socket.gethostbyaddr(daddr)[0]
+                    dhost = gethost(daddr)
                     resolv[daddr] = dhost
                 except:                
                     resolv[daddr] = daddr
@@ -157,7 +161,7 @@ def get_nfsocket_formated(lsocket):
             elif  RESOLV_COUNT < MAX_RESOLV:
                 try:
                     RESOLV_COUNT += 1                    
-                    shost = socket.gethostbyaddr(saddr)[0]
+                    shost = gethost(saddr)
                     resolv[saddr] = shost
                 except:
                     resolv[saddr] = saddr
@@ -167,7 +171,7 @@ def get_nfsocket_formated(lsocket):
             elif  RESOLV_COUNT < MAX_RESOLV:
                 try:
                     RESOLV_COUNT += 1
-                    dhost = socket.gethostbyaddr(daddr)[0]
+                    dhost = gethost(daddr)
                     resolv[daddr] = dhost
                 except:                
                     resolv[daddr] = daddr
@@ -187,7 +191,7 @@ def get_nfsocket_formated(lsocket):
             'layer': lsplit[0],           
             'ntype': lsplit[3],
         }
-        
+
     return _tmp
 ###
 
@@ -203,8 +207,7 @@ except:
 
 
 with open(nf_conn_file) as f:
-    sockets = read_file(f.read())
-    sorted(sockets)
+    sockets = read_file(f.read())    
 for lsocket in sockets:
     fsocket = get_nfsocket_formated(lsocket)
     if fsocket:
@@ -217,6 +220,7 @@ try:
     f_cache.close()
 except:
     False
-    
+
+net_fconn['value'] = sorted(net_fconn['value'], key=lambda d: d['saddr'])
 lista.append(net_fconn)
 print(json.dumps(lista))
