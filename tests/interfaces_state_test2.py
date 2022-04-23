@@ -79,7 +79,7 @@ for interface_dir in interfaces_dirs:
 
 interfaces_state['value'].append(_interfaces_state)
 
-#pprint.pprint(interfaces_state)
-lista.append(interfaces_state)
+pprint.pprint(interfaces_state)
+#lista.append(interfaces_state)
 #pprint.pprint(lista)
-print(json.dumps(lista))
+#print(json.dumps(lista))

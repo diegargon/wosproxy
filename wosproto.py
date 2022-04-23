@@ -35,7 +35,7 @@ class WosProto:
             return reply
         
         if 'request' not in data_dct or self.validate_request(data_dct) == False:
-            reply = {'result': False, 'error': 'Invalid request receive'}
+            reply = {'result': False, 'error': 'Invalid request receive', 'req': data_dct}
             return reply
         
         return  data_dct
@@ -77,7 +77,10 @@ class WosProto:
             script_request = self.bindir + '/' + request_value['cmd']
             request_data['request'][i]['cmd'] = script_request
             if not os.path.isfile(script_request):                
-                self.logger.err('File is not executable: %s' % script_request)        
+                self.logger.err('File not exists: %s' % script_request)
+                return False
+            elif not os.access(script_request, os.X_OK):
+                self.logger.err('File is not executable: %s' % script_request)
                 return False
         return True
          

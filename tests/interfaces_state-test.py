@@ -14,7 +14,10 @@ os.chdir(script_dir)
 interfaces_dir_get = '/sys/class/net'
 
 lista = []
-interfaces_state = {"id":"interfaces_state", "type": "array", "value":[]}
+static_list = {"id":"interfaces_state", "type": "array", "value":[]}
+
+interfaces = []
+
 
 flags = {
 	'IFF_UP'		 :	1<<0,
@@ -51,6 +54,9 @@ def get_keyfiles_value(dir):
 
     onlyfiles = [f for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))] 
     for onefile in onlyfiles:
+        #if basename not in keyvalue:
+        #    keyvalue[basename] =  {'iface': basename}
+        #print(dir + '/' +  onefile)
         readdir = dir + '/' +  onefile
         if os.access(readdir, os.R_OK):                        
             with open(readdir, 'r') as file:
@@ -63,23 +69,62 @@ def get_keyfiles_value(dir):
                         keyvalue.update({'hflags': hflags})
                 except:
                     False
-
+                
+    #pprint.pprint(keyvalue)
+    #pprint.pprint(onlyfiles)
     return keyvalue
+
+def parse_interfaces_dir(interface_dir):
+    False
 
 interfaces_dirs = [ f.path for f in os.scandir(interfaces_dir_get) if f.is_dir() ]
 
-_interfaces_state = {}
+_tmp = {}
 for interface_dir in interfaces_dirs:    
     iface = os.path.basename(interface_dir)
-    _interfaces_state[iface] = {'iface': iface}
-    _interfaces_state[iface].update(get_keyfiles_value(interface_dir))    
+    _tmp[iface] = {'iface': iface}
+    _tmp[iface].update(get_keyfiles_value(interface_dir))
     #get stats
     interface_dir_stats = interface_dir + '/statistics'
-    _interfaces_state[iface].update(get_keyfiles_value(interface_dir_stats))
+    #print(interface_dir)
+    _tmp[iface].update(get_keyfiles_value(interface_dir_stats))
+    #_tmp = parse_interfaces_dir(interface_dir)
 
-interfaces_state['value'].append(_interfaces_state)
 
+pprint.pprint(_tmp)
+#pprint.pprint(interfaces)
+#interfaces_state = parse_interfaces_dir(interfaces_state_dir)
 #pprint.pprint(interfaces_state)
-lista.append(interfaces_state)
-#pprint.pprint(lista)
-print(json.dumps(lista))
+
+#lista.append(interfaces_state)
+#print(json.dumps(lista))
+
+#print hex
+#print(format(flags['IFF_RUNNING'], '#X'))
+#print(hex(flags['IFF_RUNNING']))
+
+x = 0x1003 #wan0
+x = "0x1043"
+#x = 0x9 #lo
+"""
+print('RUNNING')
+print(x & flags['IFF_RUNNING'])
+print('UP')
+print(x & flags['IFF_UP'] )
+print('BROADCAST')
+print(x & flags['IFF_BROADCAST'] ) 
+print('MULTICAST')
+print(x & flags['IFF_MULTICAST'] ) 
+print('LOOPBACK')
+print(x & flags['IFF_LOOPBACK'] ) 
+print('PROMISC')
+print(x & flags['IFF_PROMISC'] ) 
+"""
+"""
+test = []
+if (int(x, 16) & flags['IFF_UP']):
+    test.append('IFF_IP')
+    test.append('IFF_IP')
+
+pprint.pprint(test)
+"""

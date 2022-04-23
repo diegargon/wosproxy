@@ -28,7 +28,7 @@ idx = 1
 
 # Avoid slow down limiting request without using resolv_cache
 RESOLV_COUNT = 0 
-MAX_RESOLV = 20
+MAX_RESOLV = 30
 
 def read_file(f):
     sockets = f.split('\n')
@@ -36,7 +36,7 @@ def read_file(f):
 
 def gethost(addr): 
     #TODO Timeout
-    return socket.gethostbyaddr(saddr)[0]
+    return socket.gethostbyaddr(addr)[0]
 
 def get_nfsocket_formated(lsocket):
     global RESOLV_COUNT
@@ -50,8 +50,11 @@ def get_nfsocket_formated(lsocket):
     if "[UNREPLIED]" in lsplit[tcp_dst_idx]:
         tcp_dst_idx += 1
     if "[UNREPLIED]" in lsplit[udp_dst_idx]:       
-        udp_dst_idx += 1
-    
+        if lsplit[2] == "unknonwn":
+            #udp_dst_idx += 2
+            False
+        else:
+            udp_dst_idx += 1
     #print(lsocket)
     if lsplit[2] == "tcp":
         saddr = lsplit[6].replace('src=','').strip()
@@ -62,11 +65,11 @@ def get_nfsocket_formated(lsocket):
             if saddr == "127.0.0.1" and daddr == "127.0.0.1":
                 return False
         if RESOLV_IP:
-            if saddr in resolv:
+            if saddr in resolv:                
                 shost = resolv[saddr]
-            elif  RESOLV_COUNT < MAX_RESOLV:
+            elif  RESOLV_COUNT < MAX_RESOLV:                
                 try:
-                    RESOLV_COUNT += 1
+                    RESOLV_COUNT += 1               
                     shost = gethost(saddr)
                     resolv[saddr] = shost
                 except:
