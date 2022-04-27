@@ -3,6 +3,7 @@
 Copyright (c) Diego Garcia
 All rights reserved.
 
+TODO: non blocking sockets
 """
 
 #from curses.ascii import EOT
@@ -88,7 +89,8 @@ def wos_main(appname, logger):
         s.bind(socket_filename)
         os.chmod(socket_filename, 0o666)
         s.listen(20)        
-        logger.info(appname + ' is listining on socket ' + socket_filename + ' pid %d' % os.getpid())
+        logger.info(appname + ' is listining on socket ' + socket_filename + ' pid %d' % os.getpid())        
+
         while True:
             conn, addr = s.accept()            
             conn.send

@@ -5,7 +5,7 @@
 import json
 import socket
 import psutil
-
+import os
 
 lista = []
 interfaces_info = {"id":"interfaces_info", "type": "array", "value":[]}
@@ -25,6 +25,23 @@ for iface, addr_list in addresses.items():
         interfaces[iface].update({'speed': stats[iface].speed})
     else: 
         interfaces[iface].update({'up': 0})    
+
+    if os.path.isdir('/sys/devices/virtual/net/'+ iface):
+        virtual = 1
+    else:
+        virtual = 0
+    interfaces[iface].update({'virtual': virtual})
+    devtype = 'unknown'
+    with open('/sys/class/net/'+ iface + '/uevent') as f:
+        dev = f.readline().strip()
+        dev = dev.split('=')
+        if dev[0] == 'INTERFACE' and virtual == 0:
+            devtype = 'physical'
+        elif dev[0] == 'DEVTYPE':
+            devtype = dev[1]
+
+    interfaces[iface].update({'devtype': devtype})
+
     for addr in addr_list:        
         _dict_addr = {}
 	    
